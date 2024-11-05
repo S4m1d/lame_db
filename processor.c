@@ -35,4 +35,9 @@ void process_query(char *query) {
   printf("query target: %s\n", target);
 
   free(target);
+
+  if (q_oper == Q_OPER_CREATE) {
+    // TODO: collect results
+    parse_table_definition(&ptr);
+  }
 }

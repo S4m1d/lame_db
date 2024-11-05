@@ -78,6 +78,10 @@ char *parse_preworded_target(char **ptr, const char *preword) {
   }
 
   char *res = malloc(sizeof(char) * (i + 1));
+  if (res == NULL) {
+    printf("failed allocate memory");
+    exit(EXIT_FAILURE);
+  }
 
   strncpy(res, start_ptr, i);
 
@@ -90,7 +94,6 @@ char *parse_target(char **ptr, enum QueryOperation q_oper) {
   char *res;
   res = NULL;
 
-  // TODO: handle select and insert
   switch (q_oper) {
   case Q_OPER_CREATE:
     return parse_create_target(ptr);
@@ -103,29 +106,194 @@ char *parse_target(char **ptr, enum QueryOperation q_oper) {
   }
 }
 
-// TODO: implment and rework everything from indexes into pointers arithmetics
-ColumnTypeName *parse_table_structure_definition(char *q, int start_idx) {
-  ColumnTypeName *columns_arr = malloc(sizeof(ColumnTypeName));
+void write_substr(char ***substr_arr, int *count, char *substr_beg_ptr,
+                  char *substr_end_ptr) {
 
-  if (start_idx < 0 || start_idx >= strlen(q)) {
-    free(columns_arr);
-    return NULL;
+  int substr_len = substr_end_ptr - substr_beg_ptr;
+
+  char *substr = (char *)malloc((substr_len + 1) * sizeof(char));
+  if (substr == NULL) {
+    printf("failed allocate memory for substring\n");
+    exit(EXIT_FAILURE);
   }
 
-  int i = start_idx;
-  char *ptr = q;
+  strncpy(substr, substr_beg_ptr, substr_len);
+  substr[substr_len] = '\0';
 
-  if (*ptr != '(') {
-    free(columns_arr);
-    return NULL;
+  if (*count == 0) {
+    *substr_arr = (char **)malloc(1 * sizeof(void *));
+    if (*substr_arr == NULL) {
+      printf("failed allocate memory for substring\n");
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    *substr_arr = realloc(*substr_arr, (*count + 1) * sizeof(void *));
+    if (*substr_arr == NULL) {
+      printf("failed reallocate memory for substring\n");
+      exit(EXIT_FAILURE);
+    }
   }
 
-  while (*ptr != '\0' && *ptr != ' ') {
-    ptr++;
-    i++;
-  }
+  (*substr_arr)[*count] = substr;
 
-  return columns_arr;
+  (*count)++;
 }
 
-// ColumnTypeName parse_next_definition() {}
+char **get_substrs(char **ptr, int *count) {
+  *count = 0;
+  char **substr_arr;
+
+  char *substr_beg_ptr = *ptr;
+  while (**ptr != '\0') {
+    if (**ptr == ',') {
+      write_substr(&substr_arr, count, substr_beg_ptr, *ptr);
+      substr_beg_ptr = ++(*ptr);
+    } else if (**ptr == ')') {
+      write_substr(&substr_arr, count, substr_beg_ptr, *ptr);
+      (*ptr)++;
+      break;
+    } else {
+      (*ptr)++;
+    }
+  }
+
+  return substr_arr;
+}
+
+const char *BAD_COL_DEF_ERR_TMPLT =
+    "bad column definition: expected <${data type} ${column name}>, got <%s>";
+int parse_column_definition(char *ptr, ColumnDefinition *dest) {
+  // skip empty space
+  char *cur_ptr = ptr;
+  while (*cur_ptr == ' ') {
+    cur_ptr++;
+  }
+
+  if (*cur_ptr == '\0') {
+    printf(BAD_COL_DEF_ERR_TMPLT, ptr);
+
+    return -1;
+  }
+
+  char *start_ptr = cur_ptr;
+
+  while (*cur_ptr != ' ' && *cur_ptr != '\0') {
+    cur_ptr++;
+  }
+
+  if (*cur_ptr == '\0') {
+    printf(BAD_COL_DEF_ERR_TMPLT, ptr);
+
+    return -1;
+  }
+
+  if (substrcmp(start_ptr, cur_ptr, "INT")) {
+    dest->t = DT_INT;
+  } else if (substrcmp(start_ptr, cur_ptr, "TEXT")) {
+    dest->t = DT_TEXT;
+  }
+
+  while (*cur_ptr == ' ') {
+    cur_ptr++;
+  }
+
+  if (*cur_ptr == '\0') {
+    printf(BAD_COL_DEF_ERR_TMPLT, ptr);
+
+    return -1;
+  }
+
+  start_ptr = cur_ptr;
+
+  while (*cur_ptr != ' ' && *cur_ptr != '\0') {
+    cur_ptr++;
+  }
+
+  int name_len = cur_ptr - start_ptr;
+
+  if (name_len > COL_NAME_LENGTH_MAX - 1) {
+    printf("col name too long (>50)");
+
+    return -1;
+  }
+
+  strncpy(dest->name, start_ptr, name_len);
+  dest->name[name_len] = '\0';
+
+  return 0;
+}
+
+const char *data_type_str[] = {
+    "INT",
+    "TEXT",
+};
+
+void free_substrs_arr(char **substrs, int substrs_count) {
+  for (int i = 0; i < substrs_count; i++) {
+    free(substrs[i]);
+  }
+
+  free(substrs);
+}
+
+void free_column_defs(ColumnDefinition **column_defs, int count) {
+  for (int i = 0; i < count; i++) {
+    free(column_defs[i]);
+  }
+
+  free(column_defs);
+}
+
+ColumnDefinition *parse_table_definition(char **ptr) {
+  // find opening parenthesis
+  while (**ptr != '(' && **ptr != '\0') {
+    (*ptr)++;
+  }
+
+  if (**ptr == '\0') {
+    printf("couldn't find opening parenthesis");
+    return NULL;
+  } else {
+    (*ptr)++;
+  }
+
+  int substrs_count = 0;
+  char **substrs = get_substrs(ptr, &substrs_count);
+  if (substrs == NULL) {
+    printf("missing table structure definition\n");
+    return NULL;
+  }
+
+  int col_defs_count = 0;
+  ColumnDefinition **column_defs =
+      malloc(sizeof(ColumnDefinition) * substrs_count);
+  for (int i = 0; i < substrs_count; i++) {
+    // TODO: remove after debug
+    printf("substr %d: %s\n", i, substrs[i]);
+
+    ColumnDefinition *column_def =
+        (ColumnDefinition *)malloc(sizeof(ColumnDefinition));
+
+    int res = parse_column_definition(substrs[i], column_def);
+    if (res != 0) {
+      free_column_defs(column_defs, col_defs_count);
+      return NULL;
+    }
+
+    column_defs[col_defs_count] = column_def;
+
+    col_defs_count++;
+  }
+
+  // TODO: remove after debug
+  for (int i = 0; i < col_defs_count; i++) {
+    printf("column %d: name=%s type=%s\n", i, column_defs[i]->name,
+           data_type_str[column_defs[i]->t]);
+  }
+
+  free_column_defs(column_defs, col_defs_count);
+
+  free_substrs_arr(substrs, substrs_count);
+
+  return NULL;
+}
