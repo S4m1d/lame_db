@@ -11,6 +11,7 @@ void process_query(char *query) {
     return;
   }
 
+  // TODO: remove after debug
   switch (q_oper) {
   case Q_OPER_CREATE:
     printf("query operation: CREATE\n");
@@ -37,7 +38,12 @@ void process_query(char *query) {
   free(target);
 
   if (q_oper == Q_OPER_CREATE) {
-    // TODO: collect results
-    parse_table_definition(&ptr);
+    int column_defs_count = 0;
+    ColumnDefinition *column_defs =
+        parse_table_definition(&ptr, &column_defs_count);
+
+    free(column_defs);
+  } else if (q_oper == Q_OPER_INSERT) {
+  } else if (q_oper == Q_OPER_SELECT) {
   }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_QUERY_SIZE 50
+#define MAX_QUERY_SIZE 100
 
 enum QueryOperation { Q_OPER_CREATE, Q_OPER_INSERT, Q_OPER_SELECT };
 
@@ -20,4 +20,4 @@ typedef struct {
 
 char *parse_target(char **ptr, enum QueryOperation q_oper);
 
-ColumnDefinition *parse_table_definition(char **ptr);
+ColumnDefinition *parse_table_definition(char **ptr, int *col_defs_count);

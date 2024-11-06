@@ -160,6 +160,14 @@ char **get_substrs(char **ptr, int *count) {
   return substr_arr;
 }
 
+void free_substrs_arr(char **substrs, int substrs_count) {
+  for (int i = 0; i < substrs_count; i++) {
+    free(substrs[i]);
+  }
+
+  free(substrs);
+}
+
 const char *BAD_COL_DEF_ERR_TMPLT =
     "bad column definition: expected <${data type} ${column name}>, got <%s>";
 int parse_column_definition(char *ptr, ColumnDefinition *dest) {
@@ -228,23 +236,7 @@ const char *data_type_str[] = {
     "TEXT",
 };
 
-void free_substrs_arr(char **substrs, int substrs_count) {
-  for (int i = 0; i < substrs_count; i++) {
-    free(substrs[i]);
-  }
-
-  free(substrs);
-}
-
-void free_column_defs(ColumnDefinition **column_defs, int count) {
-  for (int i = 0; i < count; i++) {
-    free(column_defs[i]);
-  }
-
-  free(column_defs);
-}
-
-ColumnDefinition *parse_table_definition(char **ptr) {
+ColumnDefinition *parse_table_definition(char **ptr, int *col_defs_count) {
   // find opening parenthesis
   while (**ptr != '(' && **ptr != '\0') {
     (*ptr)++;
@@ -264,36 +256,82 @@ ColumnDefinition *parse_table_definition(char **ptr) {
     return NULL;
   }
 
-  int col_defs_count = 0;
-  ColumnDefinition **column_defs =
+  *col_defs_count = 0;
+  ColumnDefinition *column_defs =
       malloc(sizeof(ColumnDefinition) * substrs_count);
+
   for (int i = 0; i < substrs_count; i++) {
     // TODO: remove after debug
     printf("substr %d: %s\n", i, substrs[i]);
 
-    ColumnDefinition *column_def =
-        (ColumnDefinition *)malloc(sizeof(ColumnDefinition));
+    int res =
+        parse_column_definition(substrs[i], &column_defs[*col_defs_count]);
 
-    int res = parse_column_definition(substrs[i], column_def);
     if (res != 0) {
-      free_column_defs(column_defs, col_defs_count);
+      free(column_defs);
+
       return NULL;
     }
 
-    column_defs[col_defs_count] = column_def;
-
-    col_defs_count++;
+    (*col_defs_count)++;
   }
 
   // TODO: remove after debug
-  for (int i = 0; i < col_defs_count; i++) {
-    printf("column %d: name=%s type=%s\n", i, column_defs[i]->name,
-           data_type_str[column_defs[i]->t]);
+  for (int i = 0; i < *col_defs_count; i++) {
+    printf("column %d: name=%s type=%s\n", i, column_defs[i].name,
+           data_type_str[column_defs[i].t]);
   }
-
-  free_column_defs(column_defs, col_defs_count);
 
   free_substrs_arr(substrs, substrs_count);
 
-  return NULL;
+  return column_defs;
+}
+
+char *truncate_bounding_space(char *ptr) {
+  // find start of word
+  while (*ptr == ' ') {
+    ptr++;
+  }
+  char *beg = ptr;
+  // find end of word
+  while (*ptr != ' ' && *ptr != '\0') {
+    ptr++;
+  }
+
+  int res_len = ptr - beg + 1;
+  char *res = malloc(res_len * sizeof(char));
+  res[res_len - 1] = '\0';
+
+  strncpy(res, beg, res_len - 1);
+
+  return res;
+}
+
+char **parse_columns_to_insert(char **ptr, int *columns_count) {
+  while (**ptr != '(' && **ptr != '\0') {
+    (*ptr)++;
+  }
+
+  if (**ptr == '\0') {
+    printf("couldn't find opening parenthesis\n");
+    return NULL;
+  } else {
+    (*ptr)++;
+  }
+
+  *columns_count = 0;
+
+  char **substrs = get_substrs(ptr, columns_count);
+  if (substrs == NULL) {
+    printf("missing columns to insert definitions\n");
+    return NULL;
+  }
+
+  for (int i = 0; i < *columns_count; i++) {
+    char *truncated_substr = truncate_bounding_space(substrs[i]);
+    free(substrs[i]);
+    substrs[i] = truncated_substr;
+  }
+
+  return substrs;
 }
