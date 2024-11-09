@@ -1,11 +1,10 @@
 #include "processor.h"
-#include "query.h"
-#include "str_utils.h"
+#include "util/str_utils.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-void truncate_nlc(char *);
+#define MAX_QUERY_SIZE 100
 
 int main() {
   bool is_terminated = false;
@@ -24,12 +23,4 @@ int main() {
   }
 
   return 0;
-}
-
-void truncate_nlc(char *str) {
-  char *new_line_ch_pos = strchr(str, '\n');
-
-  if (new_line_ch_pos != NULL) {
-    *new_line_ch_pos = '\0';
-  }
 }

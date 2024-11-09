@@ -1,1 +1,3 @@
-clang -o out/lame_db main.c query.c processor.c str_utils.c
+c_files=$(find . -type f -name "*.c" | tr '\n' ' ')
+
+clang -o out/lame_db $c_files

@@ -1,5 +1,8 @@
 #include "processor.h"
-#include "query.h"
+#include "query/create.h"
+#include "query/operation.h"
+#include "query/target.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
