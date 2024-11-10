@@ -27,7 +27,10 @@ char *parse_create_target(char **q_ptr) {
 }
 
 char *parse_preworded_target(char **q_ptr, const char *preword) {
-  skip_word(q_ptr, preword);
+  int skip_res = skip_word(q_ptr, preword);
+  if (skip_res != 0) {
+    return NULL;
+  }
 
   // skip spaces
   skip_spaces(q_ptr);
