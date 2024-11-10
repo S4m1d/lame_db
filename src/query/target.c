@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "types.h"
 #include "../util/str_utils.h"
+#include "types.h"
 
 char *parse_create_target(char **q_ptr) {
   // skip spaces
-  while (**q_ptr == ' ') {
-    (*q_ptr)++;
-  }
+  skip_spaces(q_ptr);
 
   char *start_ptr = *q_ptr;
 
@@ -29,28 +27,12 @@ char *parse_create_target(char **q_ptr) {
 }
 
 char *parse_preworded_target(char **q_ptr, const char *preword) {
+  skip_word(q_ptr, preword);
+
   // skip spaces
-  while (**q_ptr == ' ') {
-    (*q_ptr)++;
-  }
+  skip_spaces(q_ptr);
 
   char *start_ptr = *q_ptr;
-
-  while (**q_ptr != '\0' && **q_ptr != ' ') {
-    (*q_ptr)++;
-  }
-
-  if (!substrcmp(start_ptr, *q_ptr, preword)) {
-    printf("not found preword %s\n", preword);
-    return NULL;
-  }
-
-  // skip spaces
-  while (**q_ptr == ' ') {
-    (*q_ptr)++;
-  }
-
-  start_ptr = *q_ptr;
 
   int i = 0;
   while (**q_ptr != '\0' && **q_ptr != ' ') {

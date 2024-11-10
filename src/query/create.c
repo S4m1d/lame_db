@@ -87,7 +87,7 @@ ColumnDefinition *parse_table_definition(char **q_ptr, int *col_defs_count) {
   }
 
   int substrs_count = 0;
-  char **substrs = get_substrs(q_ptr, &substrs_count, ')');
+  char **substrs = get_substrs(q_ptr, &substrs_count, ',', ')');
   if (substrs == NULL) {
     printf("missing table structure definition\n");
     return NULL;

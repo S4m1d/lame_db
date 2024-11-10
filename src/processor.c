@@ -1,16 +1,19 @@
 #include "processor.h"
 #include "query/create.h"
+#include "query/feedback.h"
 #include "query/operation.h"
 #include "query/target.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+void print_syntax_mistake_feedback(char *query, char *ptr);
 
 void process_query(char *query) {
   char *ptr = query;
   enum QueryOperation q_oper = parse_oper_type(&ptr);
   if (q_oper == -1) {
     printf("failed to parse query operation\n");
+    print_syntax_mistake_feedback(query, ptr);
     return;
   }
 
@@ -33,6 +36,7 @@ void process_query(char *query) {
   char *target = parse_target(&ptr, q_oper);
   if (target == NULL) {
     printf("query target not found\n");
+    print_syntax_mistake_feedback(query, ptr);
     return;
   }
 
@@ -49,4 +53,10 @@ void process_query(char *query) {
   } else if (q_oper == Q_OPER_INSERT) {
   } else if (q_oper == Q_OPER_SELECT) {
   }
+}
+
+void print_syntax_mistake_feedback(char *query, char *ptr) {
+  char *feedback = generate_syntax_mistake_feedback(query, ptr);
+  printf("%s", feedback);
+  free(feedback);
 }

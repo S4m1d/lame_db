@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+void skip_spaces(char **q_ptr) {
+  while (**q_ptr == ' ') {
+    (*q_ptr)++;
+  }
+}
+
 bool substrcmp(char *start_ptr, char *end_ptr, const char *str2) {
   for (char *ptr1 = start_ptr, *ptr2 = str2; ptr1 < end_ptr; ptr1++, ptr2++) {
     if (*ptr1 != *ptr2) {
@@ -74,13 +80,17 @@ void write_substr(char ***substr_arr, int *count, char *substr_beg_ptr,
   (*count)++;
 }
 
-char **get_substrs(char **q_ptr, int *count, char end_c) {
+// get_substrs function carves out substrings delimited by delim and returns
+// them, it writes amount of substrings into count parameter, it starts from
+// q_ptr and stops at first encounter of end_c, it moves input q_ptr to the last
+// read position
+char **get_substrs(char **q_ptr, int *count, char delim, char end_c) {
   *count = 0;
   char **substr_arr;
 
   char *substr_beg_ptr = *q_ptr;
   while (**q_ptr != '\0') {
-    if (**q_ptr == ',') {
+    if (**q_ptr == delim) {
       write_substr(&substr_arr, count, substr_beg_ptr, *q_ptr);
       substr_beg_ptr = ++(*q_ptr);
     } else if (**q_ptr == end_c) {
@@ -101,4 +111,21 @@ void free_substrs_arr(char **substrs, int substrs_count) {
   }
 
   free(substrs);
+}
+
+int skip_word(char **dest, const char *word) {
+  skip_spaces(dest);
+
+  char *start_ptr = *dest;
+
+  while (**dest != '\0' && **dest != ' ') {
+    (*dest)++;
+  }
+
+  if (!substrcmp(start_ptr, *dest, word)) {
+    printf("not found word %s\n", word);
+    return -1;
+  }
+
+  return 0;
 }
