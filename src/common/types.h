@@ -1,11 +1,11 @@
 #pragma once
 
+#include "limits.h"
+
 enum DataType {
   DT_INT,
   DT_TEXT,
 };
-
-#define COL_NAME_LENGTH_MAX 11
 
 typedef struct {
   enum DataType t;

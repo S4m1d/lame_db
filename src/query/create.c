@@ -57,7 +57,7 @@ int parse_column_definition(char *ptr, ColumnDefinition *dest) {
   int name_len = cur_ptr - start_ptr;
 
   if (name_len > COL_NAME_LENGTH_MAX - 1) {
-    printf("col name too long (>50)");
+    printf("col name too long (>%d)", COL_NAME_LENGTH_MAX - 1);
 
     return -1;
   }
@@ -90,6 +90,11 @@ ColumnDefinition *parse_table_definition(char **q_ptr, int *col_defs_count) {
   char **substrs = get_substrs(q_ptr, &substrs_count, ',', ')');
   if (substrs == NULL) {
     printf("missing table structure definition\n");
+    return NULL;
+  }
+
+  if (substrs_count > MAX_COLUMNS) {
+    printf("max allowed columns count is %d", MAX_COLUMNS);
     return NULL;
   }
 

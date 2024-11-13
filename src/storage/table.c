@@ -1,4 +1,5 @@
 #include "../common/types.h"
+#include "storage.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +43,7 @@ int create_table(const char *table_name, ColumnDefinition *column_defs,
 ColumnDefinition *read_table_definition(const char *table_name,
                                         int *columns_count) {
   char name[strlen(table_name) + 6];
-  snprintf(name, sizeof(name), "%s.ldbt", table_name);
+  snprintf(name, sizeof(name), "%s/%s.ldbt", STORAGE_PATH, table_name);
 
   FILE *f = fopen(name, "rb");
   if (f == NULL) {

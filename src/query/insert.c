@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../common/types.h"
 #include "../util/str_utils.h"
-#include "types.h"
 
 char **parse_columns_to_insert(char **q_ptr, int *columns_count) {
   while (**q_ptr != '(' && **q_ptr != '\0') {
