@@ -3,28 +3,6 @@
 #include <string.h>
 
 #include "../util/str_utils.h"
-#include "types.h"
-
-char *parse_create_target(char **q_ptr) {
-  // skip spaces
-  skip_spaces(q_ptr);
-
-  char *start_ptr = *q_ptr;
-
-  int i = 0;
-  while (**q_ptr != '\0' && **q_ptr != ' ') {
-    (*q_ptr)++;
-    i++;
-  }
-
-  char *res = malloc(sizeof(char) * (i + 1));
-
-  strncpy(res, start_ptr, i);
-
-  res[i] = '\0';
-
-  return res;
-}
 
 char *parse_preworded_target(char **q_ptr, const char *preword) {
   int skip_res = skip_word(q_ptr, preword);
@@ -54,20 +32,4 @@ char *parse_preworded_target(char **q_ptr, const char *preword) {
   res[i] = '\0';
 
   return res;
-}
-
-char *parse_target(char **q_ptr, enum QueryOperation q_oper) {
-  char *res;
-  res = NULL;
-
-  switch (q_oper) {
-  case Q_OPER_CREATE:
-    return parse_create_target(q_ptr);
-  case Q_OPER_INSERT:
-    return parse_preworded_target(q_ptr, "INTO");
-  case Q_OPER_SELECT:
-    return parse_preworded_target(q_ptr, "FROM");
-  default:
-    return res;
-  }
 }
