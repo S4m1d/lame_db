@@ -8,7 +8,7 @@ int create_table(const char *table_name, ColumnDefinition *column_defs,
                  int columns_count) {
 
   char name[strlen(table_name) + 6];
-  snprintf(name, sizeof(name), "%s.ldbt", table_name);
+  snprintf(name, sizeof(name), "%s/%s.ldbt", STORAGE_PATH, table_name);
 
   FILE *f = fopen(name, "wb");
   if (f == NULL) {

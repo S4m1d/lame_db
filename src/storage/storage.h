@@ -1,3 +1,3 @@
 #pragma once
 
-#define STORAGE_PATH "storage/"
+#define STORAGE_PATH "storage"
