@@ -2,6 +2,7 @@
 #include "query/create.h"
 #include "query/feedback.h"
 #include "query/operation.h"
+#include "query/target.h"
 #include "query/types.h"
 #include "storage/table.h"
 
@@ -17,6 +18,8 @@ int process_insert(char **q_ptr);
 int process_select(char **q_ptr);
 
 void process_query(char *query) {
+  printf("QUERY PROCESSING START\n");
+
   char *ptr = query;
   enum QueryOperation q_oper = parse_oper_type(&ptr);
   if (q_oper == -1) {
@@ -28,6 +31,7 @@ void process_query(char *query) {
   int res = 0;
   switch (q_oper) {
   case Q_OPER_CREATE:
+    printf("CREATE oper\n");
     res = process_create(&ptr);
     if (res < 0) {
       print_syntax_mistake_feedback(query, ptr);
@@ -49,6 +53,8 @@ void process_query(char *query) {
     print_syntax_mistake_feedback(query, ptr);
     return;
   }
+
+  printf("QUERY PROCESSING END\n");
 }
 
 void print_syntax_mistake_feedback(char *query, char *ptr) {

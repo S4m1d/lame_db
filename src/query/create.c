@@ -56,8 +56,8 @@ int parse_column_definition(char *ptr, ColumnDefinition *dest) {
 
   int name_len = cur_ptr - start_ptr;
 
-  if (name_len > COL_NAME_LENGTH_MAX - 1) {
-    printf("col name too long (>%d)", COL_NAME_LENGTH_MAX - 1);
+  if (name_len > COL_NAME_LEN_MAX - 1) {
+    printf("col name too long (>%d)", COL_NAME_LEN_MAX - 1);
 
     return -1;
   }

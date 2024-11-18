@@ -7,7 +7,8 @@
 int create_table(const char *table_name, ColumnDefinition *column_defs,
                  int columns_count) {
 
-  char name[strlen(STORAGE_PATH) + strlen(table_name) + 6];
+  // explanation of 7: 1(slash) + 5(.ldbt) + \0
+  char name[strlen(STORAGE_PATH) + strlen(table_name) + 7];
 
   snprintf(name, sizeof(name), "%s/%s.ldbt", STORAGE_PATH, table_name);
 
@@ -44,9 +45,9 @@ int create_table(const char *table_name, ColumnDefinition *column_defs,
 ColumnDefinition *read_table_definition(const char *table_name,
                                         int *columns_count) {
 
-  char name[strlen(STORAGE_PATH) + strlen(table_name) + 6];
+  char name[strlen(table_name) + 6];
 
-  snprintf(name, sizeof(name), "%s/%s.ldbt", STORAGE_PATH, table_name);
+  snprintf(name, sizeof(name), "%s.ldbt", table_name);
 
   FILE *f = fopen(name, "rb");
   if (f == NULL) {
@@ -77,5 +78,5 @@ ColumnDefinition *read_table_definition(const char *table_name,
     exit(-close_res);
   }
 
-  return 0;
+  return column_defs;
 }

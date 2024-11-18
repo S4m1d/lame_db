@@ -9,14 +9,29 @@ void skip_spaces(char **q_ptr) {
   }
 }
 
-bool substrcmp(char *start_ptr, char *end_ptr, const char *str2) {
-  for (char *ptr1 = start_ptr, *ptr2 = str2; ptr1 < end_ptr; ptr1++, ptr2++) {
-    if (*ptr1 != *ptr2) {
-      return false;
-    }
+bool substrcmp(const char *start_ptr, const char *end_ptr, const char *str2) {
+  if (start_ptr == NULL || str2 == NULL) {
+    return false;
   }
 
-  return true;
+  if (end_ptr == NULL) {
+    for (char *ptr1 = start_ptr, *ptr2 = str2; *ptr1 != '\0' && *ptr2 != '\0';
+         ptr1++, ptr2++) {
+      if (*ptr1 != *ptr2) {
+        return false;
+      }
+    }
+
+    return true;
+  } else {
+    for (char *ptr1 = start_ptr, *ptr2 = str2; ptr1 < end_ptr; ptr1++, ptr2++) {
+      if (*ptr1 != *ptr2) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
 
 void truncate_nlc(char *str) {
@@ -128,4 +143,15 @@ int skip_word(char **dest, const char *word) {
   }
 
   return 0;
+}
+
+char *find_first(char *str, char c) {
+  for (;;) {
+    if (*str == '\0') {
+      return NULL;
+    } else if (*str == c) {
+      return str;
+    }
+    str++;
+  }
 }

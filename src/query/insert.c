@@ -138,15 +138,6 @@ void *(*value_parsers[])(char *, int) = {
     parse_text_value,
 };
 
-const int DT_INT_SIZE = sizeof(int);
-
-const int DT_TEXT_SIZE = sizeof(char) * 50;
-
-int dt_sizes[] = {
-    DT_INT_SIZE,
-    DT_TEXT_SIZE,
-};
-
 void **parse_values_set(char **q_ptr, ColumnDefinition *column_defs,
                         int columns_count) {
   if (**q_ptr != '(') {
