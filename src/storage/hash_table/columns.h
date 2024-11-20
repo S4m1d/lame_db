@@ -12,6 +12,8 @@ typedef struct ColumnsHtEntry {
   void *val;
 } ColumnsHtEntry;
 
+void free_col_ht_entry(ColumnsHtEntry *entry);
+
 typedef struct ColumnsHashTable {
   ColumnsHtEntry *arr[COLUMNS_HT_SIZE];
   int (*hash_func)(const char *);

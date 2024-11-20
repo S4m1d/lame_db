@@ -42,8 +42,8 @@ int create_table(const char *table_name, ColumnDefinition *column_defs,
   return 0;
 }
 
-ColumnDefinition *read_table_definition(const char *table_name,
-                                        int *columns_count) {
+PosColumnDefinition **read_table_definition(const char *table_name,
+                                            int *columns_count) {
 
   char name[strlen(table_name) + 6];
 
@@ -62,14 +62,29 @@ ColumnDefinition *read_table_definition(const char *table_name,
     exit(read_res);
   }
 
-  ColumnDefinition *column_defs =
-      malloc(*columns_count * sizeof(ColumnDefinition));
+  PosColumnDefinition **column_defs = malloc(*columns_count * sizeof(void *));
 
-  read_res = fread(column_defs, sizeof(int), (unsigned long)columns_count, f);
-  if (read_res < 0) {
-    printf("failed read column definitions in file %s, code %d\n", name,
-           read_res);
-    exit(read_res);
+  for (int i = 0; i < *columns_count; i++) {
+    if (feof(f)) {
+      printf("DATA CORRUPTION: read_table_definition, %s, eof reached earlier, "
+             "than "
+             "expected",
+             name);
+      exit(-1);
+    }
+
+    PosColumnDefinition *col_def = malloc(sizeof(PosColumnDefinition));
+
+    read_res = fread(&col_def->info, sizeof(ColumnDefinition), 1, f);
+    if (read_res < 0) {
+      printf("failed read column definitions in file %s, code %d\n", name,
+             read_res);
+      exit(read_res);
+    }
+
+    col_def->pos = i;
+
+    column_defs[i] = col_def;
   }
 
   int close_res = fclose(f);

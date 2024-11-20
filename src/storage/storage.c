@@ -91,25 +91,24 @@ TablesHashTable *scan_tables() {
 
         int col_count = 0;
 
-        ColumnDefinition *column_defs =
+        PosColumnDefinition **column_defs =
             read_table_definition(tbl_name, &col_count);
         if (column_defs == NULL) {
           closedir(storage_dir);
           return NULL;
         }
 
-        ColumnsHashTable *col_ht =
-            new_columns_hash_table(sizeof(ColumnDefinition), col_def_hash_func);
+        ColumnsHashTable *col_ht = new_columns_hash_table(
+            sizeof(PosColumnDefinition), col_def_hash_func);
 
         // TODO: remove output after debug;
         printf("table %s, colums count %d\n", tbl_name, col_count);
 
         for (int i = 0; i < col_count; i++) {
-          // TODO: remove output after debug;
-          printf("column %d: name %s, type %s\n", i, column_defs[i].name,
-                 dt_names[column_defs[i].t]);
-          ColumnDefinition col_def = column_defs[i];
-          col_ht_put(col_ht, column_defs[i].name, &column_defs[i]);
+          printf("column %d: name %s, type %s\n", column_defs[i]->pos,
+                 column_defs[i]->info.name, dt_names[column_defs[i]->info.t]);
+
+          col_ht_put(col_ht, column_defs[i]->info.name, column_defs[i]);
         }
 
         tbls_ht_put(tbls_ht, tbl_name, col_ht);

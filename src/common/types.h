@@ -16,3 +16,8 @@ typedef struct {
   enum DataType t;
   char name[COL_NAME_LEN_MAX];
 } ColumnDefinition;
+
+typedef struct {
+  int pos;
+  ColumnDefinition info;
+}PosColumnDefinition ;

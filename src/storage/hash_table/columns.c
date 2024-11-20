@@ -5,6 +5,11 @@
 
 #include "columns.h"
 
+void free_col_ht_entry(ColumnsHtEntry *entry) {
+  free(entry->val);
+  free(entry);
+}
+
 ColumnsHashTable *new_columns_hash_table(size_t val_size,
                                          int (*hash_func)(const char *)) {
   ColumnsHashTable *ht = malloc(sizeof(ColumnsHashTable));
@@ -21,7 +26,7 @@ ColumnsHashTable *new_columns_hash_table(size_t val_size,
 
 void free_col_ht(ColumnsHashTable *ht) {
   for (int i = 0; i < COLUMNS_HT_SIZE; i++) {
-    free(ht->arr[i]);
+    free_col_ht_entry(ht->arr[i]);
   }
 
   free(ht);
@@ -43,7 +48,7 @@ void col_ht_put(ColumnsHashTable *ht, char *key, void *val) {
 
       return;
     } else if (strcmp(ht->arr[index]->key, key)) {
-      free(ht->arr[index]);
+      free_col_ht_entry(ht->arr[index]);
 
       ColumnsHtEntry *entry = malloc(sizeof(ColumnsHtEntry));
 
